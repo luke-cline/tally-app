@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useWorkspace } from "@/context/WorkspaceContext"
 import CategoryIcon from "@/components/CategoryIcon"
+import IconPicker from "@/components/IconPicker"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Check, X, Pencil } from "lucide-react"
@@ -15,6 +16,7 @@ export default function Categories() {
   const [editingId, setEditingId] = useState(null)
   const [editBudget, setEditBudget] = useState("")
   const [editName, setEditName] = useState("")
+  const [editIcon, setEditIcon] = useState("")
   const [saveError, setSaveError] = useState("")
 
   const loadData = () => {
@@ -47,6 +49,7 @@ export default function Categories() {
     setEditingId(cat.id)
     setEditBudget(cat.monthly_budget?.toString() || "0")
     setEditName(cat.name)
+    setEditIcon(cat.icon || "MoreHorizontal")
     setSaveError("")
   }
 
@@ -67,14 +70,14 @@ export default function Categories() {
     }
     const { error } = await supabase
       .from("categories")
-      .update({ monthly_budget: val, name: editName.trim() })
+      .update({ monthly_budget: val, name: editName.trim(), icon: editIcon })
       .eq("id", catId)
 
     if (error) {
       setSaveError("Could not save: " + error.message)
       return
     }
-    setCategories(cats => cats.map(c => c.id === catId ? { ...c, monthly_budget: val, name: editName.trim() } : c))
+    setCategories(cats => cats.map(c => c.id === catId ? { ...c, monthly_budget: val, name: editName.trim(), icon: editIcon } : c))
     setEditingId(null)
     setSaveError("")
   }
@@ -103,6 +106,12 @@ export default function Categories() {
                   <div>
                     <label className="text-xs text-muted-foreground">Category name</label>
                     <Input value={editName} onChange={e => setEditName(e.target.value)} className="mt-1" autoFocus />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Icon</label>
+                    <div className="mt-1">
+                      <IconPicker value={editIcon} onChange={setEditIcon} />
+                    </div>
                   </div>
                   {cat.type === "expense" && (
                     <div>
@@ -133,7 +142,7 @@ export default function Categories() {
               ) : (
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <CategoryIcon name={cat.name} size={18} />
+                    <CategoryIcon name={cat.icon} size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{cat.name}</p>

@@ -92,7 +92,7 @@ export default function Dashboard() {
                 <div key={cat.id} className="rounded-2xl border border-border bg-card p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <CategoryIcon name={cat.name} size={18} />
+                      <CategoryIcon name={cat.icon} size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{cat.name}</p>

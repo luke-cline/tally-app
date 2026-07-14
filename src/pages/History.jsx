@@ -68,6 +68,8 @@ export default function History() {
     return categories.find((c) => c.id === id)?.name || "Other"
   }
 
+  const catIcon = (id) => categories.find(c => c.id === id)?.icon || "MoreHorizontal"
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -129,7 +131,7 @@ export default function History() {
                       )}
                     >
                       <CategoryIcon
-                        name={catName(t.category_id)}
+                        name={catIcon(t.category_id)}
                         size={16}
                       />
                     </div>

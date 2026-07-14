@@ -135,7 +135,7 @@ export default function Recurring() {
             return (
               <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <CategoryIcon name={cat?.name} size={18} />
+                  <CategoryIcon name={cat?.icon} size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{r.name}</p>
