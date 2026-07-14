@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabaseClient"
 import { useWorkspace } from "@/context/WorkspaceContext"
 import CategoryIcon from "@/components/CategoryIcon"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Check, X, Pencil } from "lucide-react"
 import { formatCurrency } from "@/lib/format"
 
 export default function Categories() {
@@ -11,10 +13,13 @@ export default function Categories() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
-  const [editValue, setEditValue] = useState("")
+  const [editBudget, setEditBudget] = useState("")
+  const [editName, setEditName] = useState("")
+  const [saveError, setSaveError] = useState("")
 
-  useEffect(() => {
-  if (!workspaceId) { setLoading(false); return }
+  const loadData = () => {
+    if (!workspaceId) { setLoading(false); return }
+    setLoading(true)
     Promise.all([
       supabase.from("categories").select("*").eq("workspace_id", workspaceId).order("sort_order"),
       supabase.from("transactions").select("*").eq("workspace_id", workspaceId)
@@ -23,7 +28,9 @@ export default function Categories() {
       setTransactions(txRes.data || [])
       setLoading(false)
     })
-  }, [workspaceId])
+  }
+
+  useEffect(loadData, [workspaceId])
 
   const now = new Date()
   const monthTxns = transactions.filter(t => {
@@ -38,14 +45,38 @@ export default function Categories() {
 
   const startEdit = (cat) => {
     setEditingId(cat.id)
-    setEditValue(cat.monthly_budget?.toString() || "")
+    setEditBudget(cat.monthly_budget?.toString() || "0")
+    setEditName(cat.name)
+    setSaveError("")
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setSaveError("")
   }
 
   const saveEdit = async (catId) => {
-    const val = parseFloat(editValue) || 0
-    await supabase.from("categories").update({ monthly_budget: val }).eq("id", catId)
-    setCategories(cats => cats.map(c => c.id === catId ? { ...c, monthly_budget: val } : c))
+    const val = parseFloat(editBudget)
+    if (isNaN(val) || val < 0) {
+      setSaveError("Enter a valid amount")
+      return
+    }
+    if (!editName.trim()) {
+      setSaveError("Name can't be empty")
+      return
+    }
+    const { error } = await supabase
+      .from("categories")
+      .update({ monthly_budget: val, name: editName.trim() })
+      .eq("id", catId)
+
+    if (error) {
+      setSaveError("Could not save: " + error.message)
+      return
+    }
+    setCategories(cats => cats.map(c => c.id === catId ? { ...c, monthly_budget: val, name: editName.trim() } : c))
     setEditingId(null)
+    setSaveError("")
   }
 
   if (loading) {
@@ -58,7 +89,7 @@ export default function Categories() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Categories & Budgets</h1>
-        <p className="text-sm text-muted-foreground mt-1">Tap an amount to set a monthly spending limit.</p>
+        <p className="text-sm text-muted-foreground mt-1">Tap the edit icon to rename or change the monthly limit.</p>
       </div>
 
       <div className="space-y-2">
@@ -66,29 +97,54 @@ export default function Categories() {
           const spent = spentByCategory[cat.id] || 0
           const isEditing = editingId === cat.id
           return (
-            <div key={cat.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <CategoryIcon name={cat.name} size={18} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">{cat.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {cat.type === "income" ? "Income source" : `Spent ${formatCurrency(spent)} this month`}
-                </p>
-              </div>
-              {cat.type === "expense" && (
-                isEditing ? (
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-muted-foreground">$</span>
-                    <Input type="number" value={editValue} onChange={e => setEditValue(e.target.value)}
-                      onBlur={() => saveEdit(cat.id)} onKeyDown={e => e.key === "Enter" && saveEdit(cat.id)}
-                      className="w-24 h-8" autoFocus />
+            <div key={cat.id} className="rounded-2xl border border-border bg-card p-4">
+              {isEditing ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Category name</label>
+                    <Input value={editName} onChange={e => setEditName(e.target.value)} className="mt-1" autoFocus />
                   </div>
-                ) : (
-                  <button onClick={() => startEdit(cat)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted">
-                    {formatCurrency(cat.monthly_budget || 0)}
+                  {cat.type === "expense" && (
+                    <div>
+                      <label className="text-xs text-muted-foreground">Monthly budget</label>
+                      <div className="relative mt-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editBudget}
+                          onChange={e => setEditBudget(e.target.value)}
+                          className="pl-7"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {saveError && <p className="text-sm text-destructive">{saveError}</p>}
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => saveEdit(cat.id)} className="gap-1.5">
+                      <Check size={14} /> Save
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5">
+                      <X size={14} /> Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <CategoryIcon name={cat.name} size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{cat.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {cat.type === "income" ? "Income source" : `Spent ${formatCurrency(spent)} of ${formatCurrency(cat.monthly_budget || 0)} this month`}
+                    </p>
+                  </div>
+                  <button onClick={() => startEdit(cat)} className="text-muted-foreground hover:text-foreground p-2">
+                    <Pencil size={16} />
                   </button>
-                )
+                </div>
               )}
             </div>
           )

@@ -1,3 +1,4 @@
+import EditTransaction from "@/pages/EditTransaction"
 import React from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "@/context/AuthContext"
@@ -24,6 +25,13 @@ export default function App() {
               </WorkspaceProvider>
             </ProtectedRoute>
           } />
+        <Route path="/edit/:id" element={
+          <ProtectedRoute>
+            <WorkspaceProvider>
+              <Layout><EditTransaction /></Layout>
+            </WorkspaceProvider>
+            </ProtectedRoute>
+          } /> 
           <Route path="/add" element={
             <ProtectedRoute>
               <WorkspaceProvider>
