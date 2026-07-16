@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 
+const AUTH_REDIRECT = typeof window !== 'undefined' ? `${window.location.origin}/login` : 'https://tally-app-iota.vercel.app/login'
+
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
@@ -33,7 +35,7 @@ export function AuthProvider({ children }) {
     return supabase.auth.signOut()
   }
   
-  const sendMagicLink = (email) => supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } })
+  const sendMagicLink = (email) => supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: AUTH_REDIRECT } })
 
   return (
     <AuthContext.Provider value={{ session, user: session?.user, loading, signIn, signUp, signOut, sendMagicLink }}>
