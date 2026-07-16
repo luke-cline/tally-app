@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/lib/supabaseClient"
 import tallyIcon from "/tally-brand-assets/brand/tally-logomark-2048.png"
@@ -21,7 +21,7 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError("")
-    const { error } = await signIn(email, password)
+    const { error } = await signIn(email, password, rememberMe)
     if (error) {
       setError(error.message)
       setLoading(false)

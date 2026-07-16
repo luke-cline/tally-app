@@ -9,7 +9,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import DatePicker from "@/components/ui/date-picker"
 import { ArrowDownRight, ArrowUpRight, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useOptimisticTransaction } from "@/hooks/useOptimisticTransaction"
 
 export default function EditTransaction() {
   const { id } = useParams()
@@ -22,31 +21,8 @@ export default function EditTransaction() {
   const [date, setDate] = useState("")
   const [note, setNote] = useState("")
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
-  const [undoStack, setUndoStack] = useState({})
-  const [originalData, setOriginalData] = useState(null)
-
-  const { update, remove } = useOptimisticTransaction(workspaceId, (op) => {
-    if (op.type === "update") {
-      setUndoStack(prev => ({ ...prev, [op.id]: op.changes.previous }))
-    } else if (op.type === "undo_update") {
-      setUndoStack(prev => ({ ...prev, [op.id]: op.previous }))
-    } else if (op.type === "clear_undo") {
-      setUndoStack(prev => {
-        const next = { ...prev }
-        delete next[op.id]
-        return next
-      })
-    } else if (op.type === "remove") {
-      setUndoStack(prev => ({ ...prev, [op.id]: originalData }))
-    } else if (op.type === "undo_remove") {
-      setUndoStack(prev => {
-        const next = { ...prev }
-        delete next[op.id]
-        return next
-      })
-    }
-  })
 
   useEffect(() => {
     if (!workspaceId || !id) return
@@ -58,9 +34,8 @@ export default function EditTransaction() {
         setType(txRes.data.type)
         setAmount(txRes.data.amount.toString())
         setCategoryId(txRes.data.category_id)
-        setDate(() => txRes.data.date)
+        setDate(txRes.data.date)
         setNote(txRes.data.note || "")
-        setOriginalData(txRes.data)
       }
       setCategories((catRes.data || []).filter(c => c.type === txRes.data?.type))
       setLoading(false)
@@ -71,34 +46,40 @@ export default function EditTransaction() {
     if (!workspaceId || loading) return
     supabase.from("categories").select("*").eq("workspace_id", workspaceId).eq("type", type)
       .then(({ data }) => setCategories(data || []))
-  }, [type])
+  }, [workspaceId, loading, type])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!amount || !categoryId) return
+    setSaving(true)
     setError("")
     try {
-      await update(id, {
+      const { error } = await supabase.from("transactions").update({
         amount: parseFloat(amount),
         category_id: categoryId,
         type,
         date,
         note
-      })
+      }).eq("id", id)
+      if (error) throw error
       navigate("/history")
     } catch (err) {
       setError("Could not save changes: " + err.message)
     }
+    setSaving(false)
   }
 
   const handleDelete = async () => {
-    if (!confirm("Delete this transaction? You can undo this from Settings if needed.")) return
+    if (!confirm("Delete this transaction?")) return
+    setSaving(true)
     try {
-      await remove(id)
+      const { error } = await supabase.from("transactions").delete().eq("id", id)
+      if (error) throw error
       navigate("/history")
     } catch (err) {
       setError("Could not delete transaction.")
     }
+    setSaving(false)
   }
 
   if (loading) {
@@ -158,7 +139,7 @@ export default function EditTransaction() {
         <Button type="submit" disabled={saving || !amount} className="w-full h-12 text-base">
           {saving ? "Saving..." : "Save Changes"}
         </Button>
-        <Button type="button" variant="outline" onClick={handleDelete} className="w-full h-12 text-destructive gap-2">
+        <Button type="button" variant="outline" onClick={handleDelete} className="w-full h-12 text-destructive gap-2" disabled={saving}>
           <Trash2 size={18} /> Delete Transaction
         </Button>
       </form>
