@@ -72,7 +72,7 @@ export default function Categories() {
     }
     const { error } = await supabase
       .from("categories")
-      .update({ monthly_budget: val, name: editName.trim(), icon: editIcon })
+      .update({ monthly_budget: val, name: editName.trim(), icon: editIcon, updated_by: user?.id || '00000000-0000-0000-0000-000000000000' })
       .eq("id", catId)
 
     if (error) {

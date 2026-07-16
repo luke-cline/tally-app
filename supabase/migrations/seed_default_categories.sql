@@ -1,4 +1,5 @@
 -- Seed sensible default categories for Household and Business
+-- Note: created_by and updated_by use default values from the table schema
 
 -- Household expense defaults
 INSERT INTO categories (workspace_id, name, type, icon, monthly_budget, sort_order)
@@ -32,12 +33,13 @@ WHERE w.type = 'household'
 ON CONFLICT DO NOTHING;
 
 -- Household income defaults
-INSERT INTO categories (workspace_id, name, type, icon, sort_order)
+INSERT INTO categories (workspace_id, name, type, icon, monthly_budget, sort_order)
 SELECT
   w.id,
   c.name,
   'income',
   c.icon,
+  NULL,
   c.sort_order
 FROM workspaces w
 CROSS JOIN (
@@ -52,12 +54,13 @@ WHERE w.type = 'household'
 ON CONFLICT DO NOTHING;
 
 -- Business expense defaults
-INSERT INTO categories (workspace_id, name, type, icon, sort_order)
+INSERT INTO categories (workspace_id, name, type, icon, monthly_budget, sort_order)
 SELECT
   w.id,
   c.name,
   'expense',
   c.icon,
+  NULL,
   c.sort_order
 FROM workspaces w
 CROSS JOIN (
@@ -79,12 +82,13 @@ WHERE w.type = 'business'
 ON CONFLICT DO NOTHING;
 
 -- Business income defaults
-INSERT INTO categories (workspace_id, name, type, icon, sort_order)
+INSERT INTO categories (workspace_id, name, type, icon, monthly_budget, sort_order)
 SELECT
   w.id,
   c.name,
   'income',
   c.icon,
+  NULL,
   c.sort_order
 FROM workspaces w
 CROSS JOIN (

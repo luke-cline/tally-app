@@ -18,6 +18,21 @@
   --destructive: #A55A40;
 }
 
+/* Smooth transitions for all theme-related properties */
+.transition-theme {
+  transition: background-color 250ms ease-in-out,
+              color 250ms ease-in-out,
+              border-color 250ms ease-in-out,
+              fill 250ms ease-in-out;
+}
+
+/* Apply smooth transitions to root elements */
+body, .glass-panel, .glass-nav {
+  transition-property: background-color, border-color, color;
+  transition-duration: 250ms;
+  transition-timing-function: ease-in-out;
+}
+
 .dark {
   --background: #0A0F0F;
   --foreground: #F5FEFB;
@@ -32,10 +47,26 @@
   --destructive: #4A2F25;
 }
 
+/* Instant tap feedback - no delay on mobile */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input {
+    /* Remove any touch callout delay */
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  button:active,
+  a:active {
+    transform: scale(0.97);
+    transition: transform 100ms ease-in-out;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 250ms ease-in-out;
 }
 
 :root[class~="dark"] body {
@@ -85,6 +116,8 @@ body {
   backdrop-filter: blur(18px) saturate(1.2);
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
   border: 1px solid var(--border);
+  transition: background-color 250ms ease-in-out,
+              border-color 250ms ease-in-out;
 }
 
 .glass-nav {
@@ -92,8 +125,24 @@ body {
   backdrop-filter: blur(22px) saturate(1.3);
   -webkit-backdrop-filter: blur(22px) saturate(1.3);
   border-top: 1px solid var(--border);
+  transition: background-color 250ms ease-in-out,
+              border-color 250ms ease-in-out;
 }
 
 .dark .glass-nav {
   background: rgba(15, 18, 18, 0.72);
+}
+
+/* Fast transition for route changes */
+.route-transition {
+  transition: opacity 250ms ease-in-out, transform 250ms ease-in-out;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -288,19 +288,37 @@ BEGIN
       ELSE NEW
     END;
   END IF;
-  IF TG_OP = 'INSERT' THEN
-    INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, new_values)
-    VALUES (NEW.workspace_id, current_user_id, 'insert', TG_TABLE_NAME, NEW.id, to_jsonb(NEW));
-    RETURN NEW;
-  ELSIF TG_OP = 'UPDATE' THEN
-    INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, old_values, new_values)
-    VALUES (NEW.workspace_id, current_user_id, 'update', TG_TABLE_NAME, NEW.id, to_jsonb(OLD), to_jsonb(NEW));
-    RETURN NEW;
-  ELSIF TG_OP = 'DELETE' THEN
-    INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, old_values)
-    VALUES (OLD.workspace_id, current_user_id, 'delete', TG_TABLE_NAME, OLD.id, to_jsonb(OLD));
-    RETURN OLD;
-  END IF;
+  -- Safely log audit event, handling cases where to_jsonb might fail
+  BEGIN
+    IF TG_OP = 'INSERT' THEN
+      INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, new_values)
+      VALUES (NEW.workspace_id, current_user_id, 'insert', TG_TABLE_NAME, NEW.id, to_jsonb(NEW));
+      RETURN NEW;
+    ELSIF TG_OP = 'UPDATE' THEN
+      INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, old_values, new_values)
+      VALUES (NEW.workspace_id, current_user_id, 'update', TG_TABLE_NAME, NEW.id, to_jsonb(OLD), to_jsonb(NEW));
+      RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+      INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, old_values)
+      VALUES (OLD.workspace_id, current_user_id, 'delete', TG_TABLE_NAME, OLD.id, to_jsonb(OLD));
+      RETURN OLD;
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    -- If JSONB conversion fails, still allow the main operation
+    IF TG_OP = 'INSERT' THEN
+      INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, new_values)
+      VALUES (NEW.workspace_id, current_user_id, 'insert', TG_TABLE_NAME, NEW.id, '{}'::jsonb);
+      RETURN NEW;
+    ELSIF TG_OP = 'UPDATE' THEN
+      INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, old_values, new_values)
+      VALUES (NEW.workspace_id, current_user_id, 'update', TG_TABLE_NAME, NEW.id, '{}'::jsonb, '{}'::jsonb);
+      RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+      INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, old_values)
+      VALUES (OLD.workspace_id, current_user_id, 'delete', TG_TABLE_NAME, OLD.id, '{}'::jsonb);
+      RETURN OLD;
+    END IF;
+  END;
   RETURN NULL;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

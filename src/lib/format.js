@@ -5,8 +5,8 @@ export function formatCurrency(amount) {
   }).format(amount || 0)
 }
 
-export function formatMonthYear() {
-  return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+export function formatMonthYear(date = new Date()) {
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
 export function formatDate(dateStr, options = {}) {
