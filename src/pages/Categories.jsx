@@ -23,8 +23,8 @@ export default function Categories() {
     if (!workspaceId) { setLoading(false); return }
     setLoading(true)
     Promise.all([
-      supabase.from("categories").select("*").eq("workspace_id", workspaceId).order("sort_order"),
-      supabase.from("transactions").select("*").eq("workspace_id", workspaceId)
+      supabase.from("categories").select("*").eq("workspace_id", workspaceId).is("deleted_at", null).order("sort_order"),
+      supabase.from("transactions").select("*").eq("workspace_id", workspaceId).is("deleted_at", null)
     ]).then(([catRes, txRes]) => {
       setCategories(catRes.data || [])
       setTransactions(txRes.data || [])
@@ -84,7 +84,7 @@ export default function Categories() {
 
   if (loading) {
     return <div className="flex items-center justify-center py-20">
-      <div className="h-8 w-8 border-2 border-muted border-t-primary rounded-full animate-spin" />
+      <div className="h-8 w-8 border-2 border-muted border-t-primary rounded-full animate-spin" style={{ backdropFilter: "blur(12px)" }} />
     </div>
   }
 
@@ -100,12 +100,12 @@ export default function Categories() {
           const spent = spentByCategory[cat.id] || 0
           const isEditing = editingId === cat.id
           return (
-            <div key={cat.id} className="rounded-2xl border border-border bg-card p-4">
+            <div key={cat.id} className="glass-panel rounded-2xl p-4">
               {isEditing ? (
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs text-muted-foreground">Category name</label>
-                    <Input value={editName} onChange={e => setEditName(e.target.value)} className="mt-1" autoFocus />
+                    <Input value={editName} onChange={e => setEditName(e.target.value)} className="mt-1 h-12" autoFocus />
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground">Icon</label>
@@ -124,17 +124,17 @@ export default function Categories() {
                           min="0"
                           value={editBudget}
                           onChange={e => setEditBudget(e.target.value)}
-                          className="pl-7"
+                          className="pl-7 h-12"
                         />
                       </div>
                     </div>
                   )}
-                  {saveError && <p className="text-sm text-destructive">{saveError}</p>}
+                  {saveError && <p className="text-sm text-destructive" style={{ backdropFilter: "blur(12px)" }}>{saveError}</p>}
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => saveEdit(cat.id)} className="gap-1.5">
+                    <Button size="sm" onClick={() => saveEdit(cat.id)} className="gap-1.5 h-10">
                       <Check size={14} /> Save
                     </Button>
-                    <Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5">
+                    <Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5 h-10">
                       <X size={14} /> Cancel
                     </Button>
                   </div>
@@ -150,8 +150,8 @@ export default function Categories() {
                       {cat.type === "income" ? "Income source" : `Spent ${formatCurrency(spent)} of ${formatCurrency(cat.monthly_budget || 0)} this month`}
                     </p>
                   </div>
-                  <button onClick={() => startEdit(cat)} className="text-muted-foreground hover:text-foreground p-2">
-                    <Pencil size={16} />
+                  <button onClick={() => startEdit(cat)} className="text-muted-foreground hover:text-foreground p-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                    <Pencil size={18} />
                   </button>
                 </div>
               )}

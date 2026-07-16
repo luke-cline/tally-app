@@ -4,6 +4,9 @@ import { LayoutDashboard, Plus, Tag, Repeat, History as HistoryIcon, LogOut } fr
 import WorkspaceToggle from "./WorkspaceToggle"
 import ThemeToggle from "./ThemeToggle"
 import { useAuth } from "@/context/AuthContext"
+import tallyIcon from "/tally-brand-assets/brand/tally-logomark-2048.png"
+import tallyWordmark from "/tally-brand-assets/wordmark/tally-wordmark-blue.svg"
+import Footer from "./Footer"
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -13,15 +16,22 @@ const navItems = [
   { to: "/history", label: "History", icon: HistoryIcon },
 ]
 
+const isMobile = () => typeof window !== "undefined" && window.innerWidth < 640
+
 export default function Layout({ children }) {
   const location = useLocation()
   const { signOut } = useAuth()
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <span className="font-semibold text-lg">Tally</span>
+      <header className="glass-nav sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={tallyIcon} alt="Tally" className="h-8 w-8 rounded-xl object-cover" />
+            {!isMobile() && (
+              <img src={tallyWordmark} alt="Tally" className="h-5 w-auto" />
+            )}
+          </Link>
           <div className="flex items-center gap-3">
             <WorkspaceToggle />
             <ThemeToggle />
@@ -32,7 +42,7 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-6">
+      <main className="max-w-6xl mx-auto px-4 py-6 pb-24 sm:pb-6">
         {children}
       </main>
 
@@ -55,7 +65,7 @@ export default function Layout({ children }) {
         </div>
       </nav>
 
-      <nav className="hidden sm:flex max-w-4xl mx-auto px-4 gap-1 border-t border-border py-2">
+      <nav className="hidden sm:flex max-w-6xl mx-auto px-4 gap-1 border-t border-border py-2">
         {navItems.map(item => {
           const Icon = item.icon
           const active = location.pathname === item.to
@@ -71,6 +81,10 @@ export default function Layout({ children }) {
           )
         })}
       </nav>
+
+      <Footer />
     </div>
   )
 }
+
+export default Layout

@@ -3,7 +3,7 @@ import React from "react"
 export default function StatCard({ label, value, icon: Icon, accent }) {
   const color = accent === "income" ? "var(--primary)" : "var(--destructive)"
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
+    <div className="glass-panel rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2">
         {Icon && <Icon size={16} style={{ color }} />}
         <p className="text-xs text-muted-foreground">{label}</p>

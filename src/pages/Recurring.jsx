@@ -26,8 +26,8 @@ export default function Recurring() {
   useEffect(() => {
   if (!workspaceId) { setLoading(false); return }
     Promise.all([
-      supabase.from("recurring_transactions").select("*").eq("workspace_id", workspaceId).order("next_due_date"),
-      supabase.from("categories").select("*").eq("workspace_id", workspaceId)
+      supabase.from("recurring_transactions").select("*").eq("workspace_id", workspaceId).is("deleted_at", null).order("next_due_date"),
+      supabase.from("categories").select("*").eq("workspace_id", workspaceId).is("deleted_at", null)
     ]).then(([recRes, catRes]) => {
       setRecurring(recRes.data || [])
       setCategories(catRes.data || [])
@@ -80,8 +80,8 @@ export default function Recurring() {
         </Button>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleAdd} className="rounded-2xl border border-border bg-card p-4 space-y-4">
+        {showForm && (
+          <form onSubmit={handleAdd} className="glass-panel rounded-2xl p-4 space-y-4">
           <div>
             <Label htmlFor="r-name">Name</Label>
             <Input id="r-name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1.5" required />
@@ -123,9 +123,9 @@ export default function Recurring() {
         </form>
       )}
 
-      <div className="space-y-2">
+          <div className="space-y-2">
         {recurring.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+          <div className="glass-panel rounded-2xl p-8 text-center text-muted-foreground">
             <p>No recurring transactions yet.</p>
           </div>
         ) : (
@@ -133,7 +133,7 @@ export default function Recurring() {
             const days = daysUntil(r.next_due_date)
             const cat = categories.find(c => c.id === r.category_id)
             return (
-              <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
+              <div key={r.id} className="glass-panel flex items-center gap-3 rounded-2xl p-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <CategoryIcon name={cat?.icon} size={18} />
                 </div>

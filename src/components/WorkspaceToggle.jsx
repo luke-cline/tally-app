@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 export default function WorkspaceToggle() {
   const { workspaceType, setWorkspaceType } = useWorkspace()
   return (
-    <div className="flex rounded-lg border border-border p-1 gap-1">
+    <div className="glass-panel flex rounded-lg p-1 gap-1" style={{ backdropFilter: "blur(12px)" }}>
       {["household", "business"].map(type => (
         <button
           key={type}

@@ -6,6 +6,7 @@ import { WorkspaceProvider } from "@/context/WorkspaceContext"
 import ProtectedRoute from "@/components/ProtectedRoute"
 import Layout from "@/components/Layout"
 import Login from "@/pages/Login"
+import Signup from "@/pages/Signup"
 import Dashboard from "@/pages/Dashboard"
 import AddTransaction from "@/pages/AddTransaction"
 import Categories from "@/pages/Categories"
@@ -18,6 +19,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/" element={
             <ProtectedRoute>
               <WorkspaceProvider>

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { ArrowDownRight, ArrowUpRight, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useOptimisticTransaction } from "@/hooks/useOptimisticTransaction"
 
 export default function EditTransaction() {
   const { id } = useParams()
@@ -20,8 +21,31 @@ export default function EditTransaction() {
   const [date, setDate] = useState("")
   const [note, setNote] = useState("")
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+  const [undoStack, setUndoStack] = useState({})
+  const [originalData, setOriginalData] = useState(null)
+
+  const { update, remove } = useOptimisticTransaction(workspaceId, (op) => {
+    if (op.type === "update") {
+      setUndoStack(prev => ({ ...prev, [op.id]: op.changes.previous }))
+    } else if (op.type === "undo_update") {
+      setUndoStack(prev => ({ ...prev, [op.id]: op.previous }))
+    } else if (op.type === "clear_undo") {
+      setUndoStack(prev => {
+        const next = { ...prev }
+        delete next[op.id]
+        return next
+      })
+    } else if (op.type === "remove") {
+      setUndoStack(prev => ({ ...prev, [op.id]: originalData }))
+    } else if (op.type === "undo_remove") {
+      setUndoStack(prev => {
+        const next = { ...prev }
+        delete next[op.id]
+        return next
+      })
+    }
+  })
 
   useEffect(() => {
     if (!workspaceId || !id) return
@@ -33,8 +57,9 @@ export default function EditTransaction() {
         setType(txRes.data.type)
         setAmount(txRes.data.amount.toString())
         setCategoryId(txRes.data.category_id)
-        setDate(txRes.data.date)
+        setDate(() => txRes.data.date)
         setNote(txRes.data.note || "")
+        setOriginalData(txRes.data)
       }
       setCategories((catRes.data || []).filter(c => c.type === txRes.data?.type))
       setLoading(false)
@@ -50,28 +75,29 @@ export default function EditTransaction() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!amount || !categoryId) return
-    setSaving(true)
     setError("")
-    const { error } = await supabase.from("transactions").update({
-      amount: parseFloat(amount),
-      category_id: categoryId,
-      type,
-      date,
-      note
-    }).eq("id", id)
-
-    if (error) {
-      setError("Could not save changes: " + error.message)
-      setSaving(false)
-    } else {
+    try {
+      await update(id, {
+        amount: parseFloat(amount),
+        category_id: categoryId,
+        type,
+        date,
+        note
+      })
       navigate("/history")
+    } catch (err) {
+      setError("Could not save changes: " + err.message)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm("Delete this transaction? This can't be undone.")) return
-    await supabase.from("transactions").delete().eq("id", id)
-    navigate("/history")
+    if (!confirm("Delete this transaction? You can undo this from Settings if needed.")) return
+    try {
+      await remove(id)
+      navigate("/history")
+    } catch (err) {
+      setError("Could not delete transaction.")
+    }
   }
 
   if (loading) {
@@ -81,9 +107,9 @@ export default function EditTransaction() {
   }
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="max-w-2xl mx-auto w-full">
       <h1 className="text-2xl font-semibold mb-6">Edit Transaction</h1>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="glass-panel rounded-2xl p-5 space-y-5">
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => setType("expense")}
             className={cn("flex items-center justify-center gap-2 rounded-xl border-2 py-3 text-sm font-medium",
@@ -132,7 +158,7 @@ export default function EditTransaction() {
           {saving ? "Saving..." : "Save Changes"}
         </Button>
         <Button type="button" variant="outline" onClick={handleDelete} className="w-full h-12 text-destructive gap-2">
-          <Trash2 size={16} /> Delete Transaction
+          <Trash2 size={18} /> Delete Transaction
         </Button>
       </form>
     </div>

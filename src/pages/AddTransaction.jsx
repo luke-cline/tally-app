@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { ArrowDownRight, ArrowUpRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useOptimisticTransaction } from "@/hooks/useOptimisticTransaction"
 
 export default function AddTransaction() {
   const { workspaceId } = useWorkspace()
@@ -20,8 +21,14 @@ export default function AddTransaction() {
   const [categoryId, setCategoryId] = useState("")
   const [date, setDate] = useState(new Date().toISOString().split("T")[0])
   const [note, setNote] = useState("")
-  const [saving, setSaving] = useState(false)
+  const [optimisticItems, setOptimisticItems] = useState([])
   const [error, setError] = useState("")
+
+  const { add, saving } = useOptimisticTransaction(workspaceId, (op) => {
+    if (op.type === "add") setOptimisticItems(prev => [...prev, op.item])
+    else if (op.type === "undo_add") setOptimisticItems(prev => prev.filter(i => i.id !== op.tempId))
+    else if (op.type === "confirm_add") setOptimisticItems(prev => prev.map(i => i.id === op.tempId ? op.real : i))
+  })
 
   useEffect(() => {
     if (!workspaceId) return
@@ -35,29 +42,29 @@ export default function AddTransaction() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!amount || !categoryId) return
-    setSaving(true)
     setError("")
-    const { error } = await supabase.from("transactions").insert({
-      amount: parseFloat(amount),
-      category_id: categoryId,
-      type,
-      date,
-      note,
-      added_by: user.id,
-      workspace_id: workspaceId
-    })
-    if (error) {
+    try {
+      await add({
+        amount: parseFloat(amount),
+        category_id: categoryId,
+        type,
+        date,
+        note: note || "",
+        added_by: user.id
+      })
+      setAmount("")
+      setNote("")
+      setType("expense")
+      setDate(new Date().toISOString().split("T")[0])
+    } catch (err) {
       setError("Could not save transaction. Please try again.")
-      setSaving(false)
-    } else {
-      navigate("/")
     }
   }
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="max-w-2xl mx-auto w-full">
       <h1 className="text-2xl font-semibold mb-6">Add Transaction</h1>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="glass-panel rounded-2xl p-5 space-y-5">
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => setType("expense")}
             className={cn("flex items-center justify-center gap-2 rounded-xl border-2 py-3 text-sm font-medium",

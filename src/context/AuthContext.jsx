@@ -21,10 +21,12 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password })
+  const signUp = (email, password) => supabase.auth.signUp({ email, password })
   const signOut = () => supabase.auth.signOut()
+  const sendMagicLink = (email) => supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } })
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user, loading, signIn, signUp, signOut, sendMagicLink }}>
       {children}
     </AuthContext.Provider>
   )
