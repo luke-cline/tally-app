@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
 :root {
   --background: #F5FEFB;
   --foreground: #1F1E1A;
@@ -33,6 +35,11 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+:root[class~="dark"] body {
+  background: var(--background);
 }
 
 /* Auth background animation */
