@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { supabase } from "@/lib/supabaseClient"
 import { useWorkspace } from "@/context/WorkspaceContext"
+import { useAuth } from "@/context/AuthContext"
 import CategoryIcon from "@/components/CategoryIcon"
 import ProgressBar from "@/components/ProgressBar"
 import StatCard from "@/components/StatCard"
@@ -62,13 +63,18 @@ function SpendingTrend({ transactions, viewDate }) {
 
 export default function Dashboard() {
   const { workspaceId } = useWorkspace()
+  const { user } = useAuth()
   const [categories, setCategories] = useState([])
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewDate, setViewDate] = useState(new Date())
 
+  const greeting = user?.email?.includes('ashleigh') ? 'Ashleigh' : 
+                   user?.email?.includes('luke') ? 'Luke' : 
+                   user?.email?.split('@')[0] || 'User'
+
   useEffect(() => {
-  if (!workspaceId) { setLoading(false); return }
+    if (!workspaceId) { setLoading(false); return }
     Promise.all([
       supabase.from("categories").select("*").eq("workspace_id", workspaceId).is("deleted_at", null).order("sort_order"),
       supabase.from("transactions").select("*").eq("workspace_id", workspaceId).is("deleted_at", null).order("date", { ascending: false })
@@ -125,7 +131,7 @@ export default function Dashboard() {
             <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-semibold capitalize">Dashboard</h1>
+            <h1 className="text-2xl font-semibold capitalize">Hi {greeting}</h1>
             <p className="text-sm text-muted-foreground">{monthLabel}</p>
           </div>
           <button type="button" onClick={nextMonth} className="p-2 rounded-lg hover:bg-muted text-muted-foreground min-w-[44px] min-h-[44px] flex items-center justify-center">
