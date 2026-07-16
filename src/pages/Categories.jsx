@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useWorkspace } from "@/context/WorkspaceContext"
+import { useAuth } from "@/context/AuthContext"
 import CategoryIcon from "@/components/CategoryIcon"
 import IconPicker from "@/components/IconPicker"
 import { Input } from "@/components/ui/input"
@@ -10,6 +11,7 @@ import { formatCurrency } from "@/lib/format"
 
 export default function Categories() {
   const { workspaceId } = useWorkspace()
+  const { user } = useAuth()
   const [categories, setCategories] = useState([])
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)

@@ -140,9 +140,9 @@ export default function History() {
               ))}
             </SelectContent>
           </Select>
-          <Button type="button" variant="outline" onClick={exportCSV} disabled={filtered.length === 0} className="h-10 px-3">
+          <button type="button" onClick={exportCSV} disabled={filtered.length === 0} className="h-10 px-3 border border-border bg-transparent hover:bg-muted rounded-lg inline-flex items-center justify-center">
             <Download size={18} />
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -158,7 +158,7 @@ export default function History() {
                 {date}
               </p>
 
-              <div className="space-y-1">
+                <div className="space-y-2">
                 {txns.map((t) => (
                   <Link
                     to={`/edit/${t.id}`}
@@ -184,9 +184,8 @@ export default function History() {
                       <p className="text-sm font-medium truncate">
                         {t.note || catName(t.category_id)}
                       </p>
-
-                      <p className="text-xs text-muted-foreground">
-                        {catName(t.category_id)}
+                      <p className="text-xs text-muted-foreground truncate">
+                        {t.note && catName(t.category_id)}
                       </p>
                     </div>
 

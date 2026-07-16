@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import DatePicker from "@/components/ui/date-picker"
 import { ArrowDownRight, ArrowUpRight, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useOptimisticTransaction } from "@/hooks/useOptimisticTransaction"
@@ -127,7 +128,7 @@ export default function EditTransaction() {
           <Label htmlFor="amount">Amount</Label>
           <div className="relative mt-1.5">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">$</span>
-            <Input id="amount" type="number" step="0.01" min="0" value={amount}
+            <Input id="amount" inputMode="decimal" placeholder="0.00" value={amount}
               onChange={e => setAmount(e.target.value)} className="pl-10 text-2xl font-semibold h-14" required />
           </div>
         </div>
@@ -144,7 +145,7 @@ export default function EditTransaction() {
 
         <div>
           <Label htmlFor="date">Date</Label>
-          <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} className="mt-1.5 h-12" required />
+          <DatePicker value={date} onChange={setDate} className="mt-1.5" placeholder="Select date" />
         </div>
 
         <div>

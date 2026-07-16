@@ -282,6 +282,12 @@ DECLARE
   current_user_id UUID;
 BEGIN
   current_user_id := auth.uid();
+  IF current_user_id IS NULL THEN
+    RETURN CASE TG_OP
+      WHEN 'DELETE' THEN OLD
+      ELSE NEW
+    END;
+  END IF;
   IF TG_OP = 'INSERT' THEN
     INSERT INTO audit_logs (workspace_id, user_id, action, table_name, record_id, new_values)
     VALUES (NEW.workspace_id, current_user_id, 'insert', TG_TABLE_NAME, NEW.id, to_jsonb(NEW));

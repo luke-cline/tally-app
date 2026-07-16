@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import DatePicker from "@/components/ui/date-picker"
 import { Plus, Trash2, X } from "lucide-react"
 import { formatCurrency, formatDate, daysUntil } from "@/lib/format"
 
@@ -89,11 +90,11 @@ export default function Recurring() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="r-amount">Amount</Label>
-              <Input id="r-amount" type="number" step="0.01" min="0" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="mt-1.5" required />
+              <Input id="r-amount" inputMode="decimal" placeholder="0.00" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="mt-1.5" required />
             </div>
             <div>
               <Label htmlFor="r-date">Next due</Label>
-              <Input id="r-date" type="date" value={form.next_due_date} onChange={e => setForm({ ...form, next_due_date: e.target.value })} className="mt-1.5" required />
+              <DatePicker value={form.next_due_date} onChange={(v) => setForm({ ...form, next_due_date: v })} placeholder="Select date" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">

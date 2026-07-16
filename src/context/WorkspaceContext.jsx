@@ -22,7 +22,11 @@ export function WorkspaceProvider({ children }) {
       .then(({ data, error }) => {
         if (error) {
           console.error('Workspace fetch error:', error)
-          setError(error.message)
+          if (error.message && error.message.includes('infinite recursion')) {
+            setError('Workspace access error. Please contact support or try again later.')
+          } else {
+            setError(error.message)
+          }
         } else if (data) {
           setWorkspaces(data.map(d => d.workspaces).filter(Boolean))
         }

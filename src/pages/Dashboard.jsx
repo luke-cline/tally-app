@@ -121,15 +121,15 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={prevMonth} className="p-2 rounded-lg hover:bg-muted text-muted-foreground">
-            <ChevronLeft size={18} />
+          <button type="button" onClick={prevMonth} className="p-2 rounded-lg hover:bg-muted text-muted-foreground min-w-[44px] min-h-[44px] flex items-center justify-center">
+            <ChevronLeft size={20} />
           </button>
           <div>
             <h1 className="text-2xl font-semibold capitalize">Dashboard</h1>
             <p className="text-sm text-muted-foreground">{monthLabel}</p>
           </div>
-          <button type="button" onClick={nextMonth} className="p-2 rounded-lg hover:bg-muted text-muted-foreground">
-            <ChevronRight size={18} />
+          <button type="button" onClick={nextMonth} className="p-2 rounded-lg hover:bg-muted text-muted-foreground min-w-[44px] min-h-[44px] flex items-center justify-center">
+            <ChevronRight size={20} />
           </button>
         </div>
         {hasBudget && (
