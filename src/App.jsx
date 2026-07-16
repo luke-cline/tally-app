@@ -51,7 +51,12 @@ const splashStyles = `
   }
   :root[class~="dark"] .splash-screen { background: #1A1512; }
   
-  .splash-content { text-align: center; }
+  .splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
   .splash-icon { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 24px; }
   .splash-title { font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 700; color: #221C18; margin: 0 0 8px; }
   :root[class~="dark"] .splash-title { color: #F5FEFB; }
