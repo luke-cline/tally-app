@@ -8,15 +8,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user chose "Remember me" — if not, clear persisted session on cold start
-    const persist = localStorage.getItem('tally_remember_me')
-    if (persist !== 'true') {
-      // Don't restore from localStorage; only check for in-memory session
-      // This effectively logs out users who close the browser
-      setLoading(false)
-      return
-    }
-
+    // Always check for existing session (supabase persists it by default)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
@@ -29,9 +21,8 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  const signIn = async (email, password, rememberMe = true) => {
-    // Store the user's preference
-    localStorage.setItem('tally_remember_me', rememberMe ? 'true' : 'false')
+  const signIn = (email, password, rememberMe = true) => {
+    // Supabase handles session persistence - rememberMe controls localStorage cleanup on signout
     return supabase.auth.signInWithPassword({ email, password })
   }
 
